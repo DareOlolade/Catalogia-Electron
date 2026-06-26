@@ -1,5 +1,4 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
-import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import CatalogService from "./catalogService.js"
@@ -14,7 +13,7 @@ function createWindow() {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: path.join(__dirname, '../preload/index.js'),
       sandbox: false
     }
   })
@@ -33,7 +32,7 @@ function createWindow() {
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'))
   }
 }
 
@@ -73,10 +72,24 @@ function registerCatalogIpcHandlers(){
     }
 
     const chosenPath = result.filePaths[0]
-    const title = path.baseName(result.filePaths[0], ".pdf")
+    const title = path.basename(result.filePaths[0], ".pdf")
     return{
       filePath: chosenPath,
       title: title
+    }
+  })
+
+
+  ipcMain.handle("book:openFile", async(event, filePath)=>{
+    try{
+      const errormsg = await shell.openPath(filePath)
+      if (errormsg){
+        console.error(`Failed to Open PDF at ${filePath}. Systen Error ${errormsg}`)
+      }
+      return errormsg || null
+    }catch (error){
+      console.error("Critical error in book:openFile:", error)
+      return error.message
     }
   })
 }

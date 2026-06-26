@@ -7,7 +7,8 @@ const api = {
   addBook: (book) => ipcRenderer.invoke("catalog:add", book),
   deleteBook: (bookId) => ipcRenderer.invoke("catalog:delete", bookId),
   updateBook: (bookId, updatedFields) => ipcRenderer.invoke("catalog:update", {bookId, updatedFields}),
-  pickPdf: () =>  ipcRenderer.invoke("dialog:pickPdf")
+  pickPdf: () =>  ipcRenderer.invoke("dialog:pickPdf"),
+  openBook: (filePath) => ipcRenderer.invoke("book:openFile", filePath)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
