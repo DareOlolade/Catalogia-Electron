@@ -51,12 +51,22 @@ function App() {
     setPendingBook(null)
   }
 
+  const handleDeleteBook = async(id) => {
+    try{
+    const deletedBook = await window.api.deleteBook(id)
+    if(deletedBook){
+      setBooks((prev)=> prev.filter(b => b.id != id))
+    }}catch(error){
+      console.error("Failed to delete catalog item", error)
+    }
+  }
+
   return (
     <>
       <div>
         <button onClick = {handleAddBookClick}>Add Book</button>
       {books.map(book => (
-        <BookCard key= {book.id} book = {book}/>
+        <BookCard key= {book.id} book = {book} onDelete= {handleDeleteBook}/>
       ))}
       {isModalOpen && (<AddBookModal initialBook = {pendingBook} onSave = {handleSaveModal} onCancel = {handleCancelModal}/>)}
       </div>
