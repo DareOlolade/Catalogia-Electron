@@ -36,8 +36,23 @@ function App() {
 
   const handleSaveModal = async(completedBook)=>{
    try{
-    const savedBook = await window.api.addBook(completedBook)
-    setBooks((prevBooks) => [...prevBooks, savedBook])
+    let finalBookForm = {...completedBook}
+
+    if(finalBookForm.filePath){
+      const savedBook = await window.api.addBook(finalBookForm)
+      const coverPath = await window.api.renderCover({
+        filePath: savedBook.filePath,
+        pageNumber: savedBook.coverPageNumber || 1,
+        bookId: savedBook.id
+      })
+
+      if(coverPath){
+        const updated = await window.api.updateBook(savedBook.id, {coverImagePath: coverPath})
+        setBooks((prevBooks) => [...prevBooks, updated])
+      } else{
+        setBooks((prevBooks) => [...prevBooks, savedBook])
+      }
+    }
    }catch(error){
     console.error("Error Saving Book", error)
    }finally{

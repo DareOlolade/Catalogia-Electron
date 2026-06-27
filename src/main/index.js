@@ -1,8 +1,11 @@
-import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog, } from 'electron'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import CatalogService from "./catalogService.js"
 import path from "path"
+import fs from "fs"
+import {pdf} from "pdf-to-img"
+
 
 function createWindow() {
   // Create the browser window.
@@ -92,11 +95,59 @@ function registerCatalogIpcHandlers(){
       return error.message
     }
   })
+
+  ipcMain.handle("pdf:render-cover", async(event, {filePath, pageNumber, bookId})=>{
+    try{
+        const targetPage = pageNumber || 1
+        const baseFolder = app.getPath("userData")
+        const coversFolder = path.join(baseFolder, "covers")
+
+        if(!fs.existsSync(coversFolder)){
+          fs.mkdirSync(coversFolder, {recursive: true})
+        }
+
+        const outputFilePath = path.join(coversFolder, `${bookId}.png`)
+        const document = await pdf(filePath, {scale: 2})
+        let success = false
+        let currentPage = 0
+
+        for await(const imageBuffer of document){
+          currentPage++
+          if (currentPage === targetPage){
+            fs.writeFileSync(outputFilePath, imageBuffer)
+            success = true
+            break
+          }
+        }
+        return success ? outputFilePath : null
+    }catch(error){
+      console.error("Failed to parse and extract pdf thumnail stream", error)
+      return null
+}})
+
+ipcMain.handle("cover:read", async(event, coverImagePath)=>{
+  try{
+    if(!coverImagePath || !fs.existsSync(coverImagePath)){
+      return null
+    }
+    const buffer = fs.readFileSync(coverImagePath)
+    const base64 = buffer.toString("base64")
+    return `data:image/png;base64,${base64}`
+  }catch(error){
+      console.error("Failed to read cover image", error)
+      return null
+  }
+})
+
 }
+
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  
+
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
