@@ -28,15 +28,15 @@ const BookCard = ({book, onDelete})=>{
         }
     }
     return(
-        <div>
+        <div className = "book-card" onClick = {handleCardClick}>
 
-        {coverSrc ? <img src = {coverSrc} />: (<div>no image found</div>)}
-        <div onClick = {handleCardClick}>
-            <h1>{book.title}</h1>
-            <p>{book.author || 'Unknown Author'} — <em>{book.readStatus}</em></p>
+        {coverSrc ? <img className ="book-card-image" src = {coverSrc} />: (<div>no image found</div>)}
+        <div className = "book-card-info">
+            <h1 className = "book-card-title">{book.title}</h1>
+            <p className = "book-card-author">{book.author || 'Unknown Author'} — <em>{book.readStatus}</em></p>
         </div>
 
-        <button onClick = {handleDeleteClick}>Delete</button>
+        <button onClick = {handleDeleteClick} className="book-card-delete">Delete</button>
         </div>
     )
 }

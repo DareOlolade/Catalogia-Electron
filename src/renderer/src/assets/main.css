@@ -1,3 +1,258 @@
-@import './base.css';
+*{
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+:root{
+  --bg-primary:	#0a0a0a;
+  --bg-secondary:	#161616;
+  --bg-tertiary:	#202020;
+  --border-subtle:	#2a2a2a;
+  --border-strong:	#404040;
+  --text-primary:	#f5f5f5;
+  --text-secondary:	#a0a0a0;
+  --text-tertiary:	#6a6a6a;
+  --accent:	#ffffff;
+  --danger:	#e0e0e0;
+}
+
+body{
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 0 2rem;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app{
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  padding: 0;
+}
+
+.app-navbar{
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.app-navbar h1{
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+  margin-right: 12px;
+}
 
 
+
+
+
+.app-navbar input[type='search'] {
+  flex: 1;
+  max-width: 420px;
+  margin-left: auto;
+  padding: 8px 14px;
+  background-color: #1f1f1f;
+  border: 1px solid #2e2e2e;
+  border-radius: 8px;
+  color: #e5e5e5;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.app-navbar input[type='search']::placeholder {
+  color: #6b6b6b;
+}
+
+.app-navbar input[type='search']:focus {
+  border-color: #4a4a4a;
+}
+
+.add-book-btn {
+  padding: 8px 16px;
+  background-color: #ffffff;
+  color: #0a0a0a;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.add-book-btn:hover {
+  background-color: #d4d4d4;
+}
+
+
+.book-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 24px 20px;
+  padding: 28px;
+}
+
+.book-card{
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  background-color: var(--bg-tertiary);
+}
+.book-card-image{
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  border-radius: 6px;
+  background-color: #1f1f1f;
+  display: block;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.book-card-info{
+  padding: 10px 2px 0;
+}
+
+.book-card-title{
+  font-size: 13px;
+  font-weight: 600;
+  color: #fafafa;
+  line-height: 1.3;
+  margin-bottom: 4px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  --webkit-box-orient: vertical;
+}
+
+.book-card-author{
+  font-size: 12px;
+  color: #8a8a8a;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.book-card-author em{
+  font-style: normal;
+  color: #6b6b6b;
+}
+
+/* Book Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background-color: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px;
+}
+
+.modal-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #a3a3a3;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-form input,
+.modal-form select {
+  padding: 10px 12px;
+  background-color: #1f1f1f;
+  border: 1px solid #2e2e2e;
+  border-radius: 6px;
+  color: #fafafa;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.modal-form input:focus,
+.modal-form select:focus {
+  border-color: #525252;
+}
+
+.modal-form button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.modal-form button[type='submit'] {
+  background-color: #ffffff;
+  color: #0a0a0a;
+  margin-top: 8px;
+}
+
+.modal-form button[type='submit']:hover {
+  background-color: #d4d4d4;
+}
+
+.modal-form button[type='button'] {
+  background-color: transparent;
+  color: #a3a3a3;
+  border: 1px solid #2e2e2e;
+}
+
+.modal-form button[type='button']:hover {
+  background-color: #1f1f1f;
+  color: #fafafa;
+}
+
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
