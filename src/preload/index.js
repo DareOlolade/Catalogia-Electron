@@ -10,7 +10,8 @@ const api = {
   pickPdf: () =>  ipcRenderer.invoke("dialog:pickPdf"),
   openBook: (filePath) => ipcRenderer.invoke("book:openFile", filePath),
   renderCover: (payload) => ipcRenderer.invoke("pdf:render-cover", payload),
-  readCover: (coverImagePath) => ipcRenderer.invoke("cover:read", coverImagePath)
+  readCover: (coverImagePath) => ipcRenderer.invoke("cover:read", coverImagePath),
+  extractMetadata: (filePath) => ipcRenderer.invoke("pdf:extract-metadata", filePath)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

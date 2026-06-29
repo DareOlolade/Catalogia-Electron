@@ -28,8 +28,16 @@ function App() {
   const handleAddBookClick = async () => {
     const result = await window.api.pickPdf()
     if (result) {
+      const bookMetadata = await window.api.extractMetadata(result.filePath)
       const { filePath, title } = result
-      const bookPayLoad = { title: title, author: '', filePath: filePath }
+      const { title: metadataTitle, author, pageCount, subject } = bookMetadata
+      const bookPayLoad = {
+        title: metadataTitle || title,
+        author: author || '',
+        filePath: filePath,
+        genre: subject || "",
+        pageCount: pageCount
+      }
       setPendingBook(bookPayLoad)
       setIsModalOpen(true)
     }
@@ -86,8 +94,7 @@ function App() {
   const isSearchEmpty = books.length > 0 && filteredBooks.length == 0
   return (
     <div className="app">
-
-    {/* Nav-Bar */}
+      {/* Nav-Bar */}
       <div className="app-navbar">
         <h1>Catalogia</h1>
         <input
@@ -101,8 +108,6 @@ function App() {
         </button>
       </div>
 
-
-
       {/* main body */}
       {isSearchEmpty ? (
         <div>
@@ -115,8 +120,6 @@ function App() {
           ))}
         </div>
       )}
-
-
 
       {/* modal */}
       {isModalOpen && (

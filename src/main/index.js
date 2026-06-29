@@ -1,11 +1,11 @@
-import { app, shell, BrowserWindow, ipcMain, dialog, } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import CatalogService from "./catalogService.js"
-import path from "path"
-import fs from "fs"
-import {pdf} from "pdf-to-img"
-
+import CatalogService from './catalogService.js'
+import path from 'path'
+import fs from 'fs'
+import { pdf } from 'pdf-to-img'
+import { PDFDocument } from 'pdf-lib'
 
 function createWindow() {
   // Create the browser window.
@@ -39,115 +39,131 @@ function createWindow() {
   }
 }
 
-
-
-function registerCatalogIpcHandlers(){
+function registerCatalogIpcHandlers() {
   const catalogService = new CatalogService()
 
-  ipcMain.handle("catalog:get-all", async()=>{
+  ipcMain.handle('catalog:get-all', async () => {
     return catalogService.getAllBooks()
   })
 
-  ipcMain.handle("catalog:add", (event, book) => {
+  ipcMain.handle('catalog:add', (event, book) => {
     return catalogService.addBook(book)
   })
 
-  ipcMain.handle("catalog:delete", (event, bookId)=>{
+  ipcMain.handle('catalog:delete', (event, bookId) => {
     return catalogService.deleteBook(bookId)
   })
 
-  ipcMain.handle("catalog:update", (event, {bookId, updatedFields}) => {
+  ipcMain.handle('catalog:update', (event, { bookId, updatedFields }) => {
     return catalogService.updateBook(bookId, updatedFields)
   })
 
-  ipcMain.handle("dialog:pickPdf", async()=>{
+  ipcMain.handle('dialog:pickPdf', async () => {
     const result = await dialog.showOpenDialog({
-      title: "Select a Book PDF",
-      buttonLabel: "Add to Catalog",
-      properties: ["openFile"],
-      filters: [{
-        name: "PDF Documents", extensions: ["pdf"]
-      }]
+      title: 'Select a Book PDF',
+      buttonLabel: 'Add to Catalog',
+      properties: ['openFile'],
+      filters: [
+        {
+          name: 'PDF Documents',
+          extensions: ['pdf']
+        }
+      ]
     })
 
-    if(result.canceled || result.filePaths.length === 0){
+    if (result.canceled || result.filePaths.length === 0) {
       return null
     }
 
     const chosenPath = result.filePaths[0]
-    const title = path.basename(result.filePaths[0], ".pdf")
-    return{
+    const title = path.basename(result.filePaths[0], '.pdf')
+    return {
       filePath: chosenPath,
       title: title
     }
   })
 
-
-  ipcMain.handle("book:openFile", async(event, filePath)=>{
-    try{
+  ipcMain.handle('book:openFile', async (event, filePath) => {
+    try {
       const errormsg = await shell.openPath(filePath)
-      if (errormsg){
+      if (errormsg) {
         console.error(`Failed to Open PDF at ${filePath}. Systen Error ${errormsg}`)
       }
       return errormsg || null
-    }catch (error){
-      console.error("Critical error in book:openFile:", error)
+    } catch (error) {
+      console.error('Critical error in book:openFile:', error)
       return error.message
     }
   })
 
-  ipcMain.handle("pdf:render-cover", async(event, {filePath, pageNumber, bookId})=>{
-    try{
-        const targetPage = pageNumber || 1
-        const baseFolder = app.getPath("userData")
-        const coversFolder = path.join(baseFolder, "covers")
+  ipcMain.handle('pdf:render-cover', async (event, { filePath, pageNumber, bookId }) => {
+    try {
+      const targetPage = pageNumber || 1
+      const baseFolder = app.getPath('userData')
+      const coversFolder = path.join(baseFolder, 'covers')
 
-        if(!fs.existsSync(coversFolder)){
-          fs.mkdirSync(coversFolder, {recursive: true})
+      if (!fs.existsSync(coversFolder)) {
+        fs.mkdirSync(coversFolder, { recursive: true })
+      }
+
+      const outputFilePath = path.join(coversFolder, `${bookId}.png`)
+      const document = await pdf(filePath, { scale: 2 })
+      let success = false
+      let currentPage = 0
+
+      for await (const imageBuffer of document) {
+        currentPage++
+        if (currentPage === targetPage) {
+          fs.writeFileSync(outputFilePath, imageBuffer)
+          success = true
+          break
         }
-
-        const outputFilePath = path.join(coversFolder, `${bookId}.png`)
-        const document = await pdf(filePath, {scale: 2})
-        let success = false
-        let currentPage = 0
-
-        for await(const imageBuffer of document){
-          currentPage++
-          if (currentPage === targetPage){
-            fs.writeFileSync(outputFilePath, imageBuffer)
-            success = true
-            break
-          }
-        }
-        return success ? outputFilePath : null
-    }catch(error){
-      console.error("Failed to parse and extract pdf thumnail stream", error)
-      return null
-}})
-
-ipcMain.handle("cover:read", async(event, coverImagePath)=>{
-  try{
-    if(!coverImagePath || !fs.existsSync(coverImagePath)){
+      }
+      return success ? outputFilePath : null
+    } catch (error) {
+      console.error('Failed to parse and extract pdf thumnail stream', error)
       return null
     }
-    const buffer = fs.readFileSync(coverImagePath)
-    const base64 = buffer.toString("base64")
-    return `data:image/png;base64,${base64}`
-  }catch(error){
-      console.error("Failed to read cover image", error)
+  })
+
+  ipcMain.handle('cover:read', async (event, coverImagePath) => {
+    try {
+      if (!coverImagePath || !fs.existsSync(coverImagePath)) {
+        return null
+      }
+      const buffer = fs.readFileSync(coverImagePath)
+      const base64 = buffer.toString('base64')
+      return `data:image/png;base64,${base64}`
+    } catch (error) {
+      console.error('Failed to read cover image', error)
       return null
-  }
-})
+    }
+  })
+
+  ipcMain.handle('pdf:extract-metadata', async (event, filePath) => {
+    try {
+      const pdfBytes = fs.readFileSync(filePath)
+      const pdfDoc = await PDFDocument.load(pdfBytes, { updateMetadata: false })
+
+      const pdfMetadata = {
+        title: pdfDoc.getTitle(),
+        author: pdfDoc.getAuthor(),
+        pageCount: pdfDoc.getPageCount(),
+        subject: pdfDoc.getSubject()
+      }
+      return pdfMetadata
+    } catch (error) {
+      console.error('Not able to get pdf metadata', error)
+      return {}
+    }
+  })
 
 }
-
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  
-
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 

@@ -8,7 +8,8 @@ const AddBookModal = ({ initialBook, onSave, onCancel }) => {
     category: initialBook?.category || '',
     readStatus: initialBook?.readStatus || 'NotRead',
     coverPageNumber: initialBook?.coverPageNumber || 1,
-    filePath: initialBook?.filePath || ''
+    filePath: initialBook?.filePath || '',
+    pageCount: initialBook?.pageCount 
   })
 
   const handleChange = (e) => {
@@ -58,6 +59,7 @@ const AddBookModal = ({ initialBook, onSave, onCancel }) => {
             <input
               type="number"
               min="1"
+              max={form.pageCount}
               value={form.coverPageNumber}
               name="coverPageNumber"
               onChange={handleChange}
