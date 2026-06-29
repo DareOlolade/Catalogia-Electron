@@ -3,17 +3,21 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
 const api = {
-  getAllBooks: () => ipcRenderer.invoke("catalog:get-all"),
-  addBook: (book) => ipcRenderer.invoke("catalog:add", book),
-  deleteBook: (bookId) => ipcRenderer.invoke("catalog:delete", bookId),
-  updateBook: (bookId, updatedFields) => ipcRenderer.invoke("catalog:update", {bookId, updatedFields}),
-  pickPdf: () =>  ipcRenderer.invoke("dialog:pickPdf"),
-  pickFolder: () => ipcRenderer.invoke("dialog:pickFolder"),
-  scanPdfs: (folderPath) => ipcRenderer.invoke("folder:scan-pdfs", folderPath),
-  openBook: (filePath) => ipcRenderer.invoke("book:openFile", filePath),
-  renderCover: (payload) => ipcRenderer.invoke("pdf:render-cover", payload),
-  readCover: (coverImagePath) => ipcRenderer.invoke("cover:read", coverImagePath),
-  extractMetadata: (filePath) => ipcRenderer.invoke("pdf:extract-metadata", filePath)
+  getAllBooks: () => ipcRenderer.invoke('catalog:get-all'),
+  addBook: (book) => ipcRenderer.invoke('catalog:add', book),
+  deleteBook: (bookId) => ipcRenderer.invoke('catalog:delete', bookId),
+  updateBook: (bookId, updatedFields) =>
+    ipcRenderer.invoke('catalog:update', { bookId, updatedFields }),
+  pickPdf: () => ipcRenderer.invoke('dialog:pickPdf'),
+  pickFolder: () => ipcRenderer.invoke('dialog:pickFolder'),
+  scanPdfs: (folderPath) => ipcRenderer.invoke('folder:scan-pdfs', folderPath),
+  openBook: (filePath) => ipcRenderer.invoke('book:openFile', filePath),
+  renderCover: (payload) => ipcRenderer.invoke('pdf:render-cover', payload),
+  readCover: (coverImagePath) => ipcRenderer.invoke('cover:read', coverImagePath),
+  extractMetadata: (filePath) => ipcRenderer.invoke('pdf:extract-metadata', filePath),
+  minimizeWindow: () => ipcRenderer.send('window:minimize'),
+  maximizeWindow: () => ipcRenderer.send('window:maximize'),
+  closeWindow: () => ipcRenderer.send('window:close')
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

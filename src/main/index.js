@@ -13,6 +13,7 @@ function createWindow() {
     width: 900,
     height: 670,
     show: false,
+    frame: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
@@ -194,6 +195,23 @@ function registerCatalogIpcHandlers() {
   ipcMain.handle('folder:scan-pdfs', async (event, folderPath) => {
     if (!folderPath) return []
     return await getPdfFileRecursively(folderPath)
+  })
+
+  ipcMain.on('window:minimize', () => {
+    const win = BrowserWindow.getFocusedWindow()
+    if (win) win.minimize()
+  })
+  ipcMain.on('window:maximize', () => {
+    const win = BrowserWindow.getFocusedWindow()
+    if (win.isMaximized()) {
+      win.unmaximize()
+    } else {
+      win.maximize()
+    }
+  })
+  ipcMain.on('window:close', () => {
+    const win = BrowserWindow.getFocusedWindow()
+    if (win) win.close()
   })
 }
 

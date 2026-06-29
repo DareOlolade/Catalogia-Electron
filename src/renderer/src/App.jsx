@@ -44,7 +44,7 @@ function App() {
       const newlyAddedBooks = []
 
       for (const file of filesArray) {
-       const bookPayLoad = await buildPayloadFromFile(file)
+        const bookPayLoad = await buildPayloadFromFile(file)
         const savedBook = await window.api.addBook(bookPayLoad)
 
         if (savedBook && savedBook.id) {
@@ -147,25 +147,63 @@ function App() {
   return (
     <div className="app">
       {/* Nav-Bar */}
-      <div className="app-navbar">
-        <h1>Catalogia</h1>
-        <input
-          type="search"
-          placeholder="search"
-          value={searchQuery}
-          disabled={isBulkAdding}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        <button
-          className="add-book-btn"
-          onClick={handleAddBookClick}
-          disabled={isBulkAdding || loading}
-        >
-          {isBulkAdding ? 'Processing...' : 'Add Book(s)'}
-        </button>
-        <button onClick={handleAddFolder} disabled = {isBulkAdding || loading}>
-          {isBulkAdding ? 'Importing Folder..' : 'Add Folder'}
-        </button>
+      <div className="app-navbar synced-titlebar">
+        <h1 className="navbar-logo">Catalogia</h1>
+        <div className="navbar-controls">
+          <input
+            type="search"
+            placeholder="search"
+            value={searchQuery}
+            disabled={isBulkAdding}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <button
+            className="add-book-btn"
+            onClick={handleAddBookClick}
+            disabled={isBulkAdding || loading}
+          >
+            {isBulkAdding ? 'Processing...' : 'Add Book(s)'}
+          </button>
+          <button
+            className="add-book-btn"
+            onClick={handleAddFolder}
+            disabled={isBulkAdding || loading}
+          >
+            {isBulkAdding ? 'Importing Folder..' : 'Add Folder'}
+          </button>
+        </div>
+
+        <div className="window-controls">
+          {/* Minimize Button */}
+          <button className="win-btn" onClick={() => window.api.minimizeWindow()} title="Minimize">
+            <svg width="10" height="1" viewBox="0 0 10 1" fill="none" xmlns="http://w3.org">
+              <rect width="10" height="1" fill="currentColor" />
+            </svg>
+          </button>
+
+          {/* Maximize / Restore Button */}
+          <button className="win-btn" onClick={() => window.api.maximizeWindow()} title="Maximize">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://w3.org">
+              <rect x="0.5" y="0.5" width="9" height="9" stroke="currentColor" strokeWidth="1" />
+            </svg>
+          </button>
+
+          {/* Close Button */}
+          <button
+            className="win-btn close-btn"
+            onClick={() => window.api.closeWindow()}
+            title="Close"
+          >
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://w3.org">
+              <path
+                d="M1 1L9 9M9 1L1 9"
+                stroke="currentColor"
+                strokeWidth="1"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {loading && <div>Loading library collection...</div>}
