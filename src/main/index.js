@@ -39,6 +39,28 @@ function createWindow() {
   }
 }
 
+async function getPdfFileRecursively(dirPath) {
+  let results = []
+  try {
+    const list = await fs.promises.readdir(dirPath, { withFileTypes: true })
+    for (const file of list) {
+      const fullPath = path.join(dirPath, file.name)
+      if (file.isDirectory()) {
+        const subFoldersFiles = await getPdfFileRecursively(fullPath)
+        results = results.concat(subFoldersFiles)
+      } else if (file.isFile() && file.name.toLowerCase().endsWith('.pdf')) {
+        results.push({
+          filePath: fullPath,
+          title: path.basename(fullPath, '.pdf')
+        })
+      }
+    }
+  } catch (error) {
+    console.error(`Error scanning directory ${dirPath}`, error)
+  }
+  return results
+}
+
 function registerCatalogIpcHandlers() {
   const catalogService = new CatalogService()
 
@@ -62,7 +84,7 @@ function registerCatalogIpcHandlers() {
     const result = await dialog.showOpenDialog({
       title: 'Select a Book PDF',
       buttonLabel: 'Add to Catalog',
-      properties: ['openFile'],
+      properties: ['openFile', 'multiSelections'],
       filters: [
         {
           name: 'PDF Documents',
@@ -75,12 +97,10 @@ function registerCatalogIpcHandlers() {
       return null
     }
 
-    const chosenPath = result.filePaths[0]
-    const title = path.basename(result.filePaths[0], '.pdf')
-    return {
+    return result.filePaths.map((chosenPath) => ({
       filePath: chosenPath,
-      title: title
-    }
+      title: path.basename(chosenPath, '.pdf')
+    }))
   })
 
   ipcMain.handle('book:openFile', async (event, filePath) => {
@@ -158,6 +178,23 @@ function registerCatalogIpcHandlers() {
     }
   })
 
+  ipcMain.handle('dialog:pickFolder', async () => {
+    const result = await dialog.showOpenDialog({
+      title: 'Select a Book Folder',
+      buttonLabel: 'Select Folder',
+      properties: ['openDirectory']
+    })
+
+    if (result.canceled || result.filePaths.length === 0) {
+      return null
+    }
+    return result.filePaths[0]
+  })
+
+  ipcMain.handle('folder:scan-pdfs', async (event, folderPath) => {
+    if (!folderPath) return []
+    return await getPdfFileRecursively(folderPath)
+  })
 }
 
 // This method will be called when Electron has finished

@@ -5,8 +5,8 @@ import AddBookModal from './components/AddBookModal'
 function App() {
   const [books, setBooks] = useState([])
   const [loading, setLoading] = useState(false)
+  const [isBulkAdding, setIsBulkAdding] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [pendingBook, setPendingBook] = useState(null)
 
@@ -24,22 +24,64 @@ function App() {
   useEffect(() => {
     loadBooks()
   }, [])
+  const buildPayloadFromFile = async (file) => {
+    const metadata = await window.api.extractMetadata(file.filePath)
+    const { filePath, title } = file
+    const { title: metadataTitle, author, pageCount, subject } = metadata
+    const bookPayLoad = {
+      title: metadataTitle || title,
+      author: author || '',
+      filePath: filePath,
+      genre: subject || '',
+      pageCount: pageCount
+    }
+    return bookPayLoad
+  }
+  const importBooks = async (filesArray) => {
+    try {
+      if (!filesArray || filesArray.length === 0) return
+      setIsBulkAdding(true)
+      const newlyAddedBooks = []
 
-  const handleAddBookClick = async () => {
-    const result = await window.api.pickPdf()
-    if (result) {
-      const bookMetadata = await window.api.extractMetadata(result.filePath)
-      const { filePath, title } = result
-      const { title: metadataTitle, author, pageCount, subject } = bookMetadata
-      const bookPayLoad = {
-        title: metadataTitle || title,
-        author: author || '',
-        filePath: filePath,
-        genre: subject || "",
-        pageCount: pageCount
+      for (const file of filesArray) {
+       const bookPayLoad = await buildPayloadFromFile(file)
+        const savedBook = await window.api.addBook(bookPayLoad)
+
+        if (savedBook && savedBook.id) {
+          const coverPath = await window.api.renderCover({
+            filePath: savedBook.filePath,
+            pageNumber: savedBook.coverPageNumber || 1,
+            bookId: savedBook.id
+          })
+
+          if (coverPath) {
+            const updated = await window.api.updateBook(savedBook.id, { coverImagePath: coverPath })
+            newlyAddedBooks.push(updated)
+          } else {
+            newlyAddedBooks.push(savedBook)
+          }
+        }
       }
+
+      if (newlyAddedBooks.length > 0) {
+        setBooks((prevBooks) => [...prevBooks, ...newlyAddedBooks])
+      }
+    } catch (error) {
+      console.error('Error add Folder', error)
+    } finally {
+      setIsBulkAdding(false)
+    }
+  }
+  const handleAddBookClick = async () => {
+    const results = await window.api.pickPdf()
+    if (!results || results.length === 0) return
+    if (results.length === 1) {
+      const targetFile = results[0]
+      const bookPayLoad = await buildPayloadFromFile(targetFile)
       setPendingBook(bookPayLoad)
       setIsModalOpen(true)
+    } else {
+      await importBooks(results)
     }
   }
 
@@ -86,6 +128,16 @@ function App() {
     }
   }
 
+  const handleAddFolder = async () => {
+    const result = await window.api.pickFolder()
+    if (result) {
+      const pdfs = await window.api.scanPdfs(result)
+      if (pdfs && pdfs.length > 0) {
+        await importBooks(pdfs)
+      }
+    }
+  }
+
   const filteredBooks = books.filter((book) => {
     const titleMatch = book.title?.toLowerCase().includes(searchQuery.toLowerCase())
     const authorMatch = book.author?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -101,13 +153,22 @@ function App() {
           type="search"
           placeholder="search"
           value={searchQuery}
+          disabled={isBulkAdding}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <button className="add-book-btn" onClick={handleAddBookClick}>
-          Add Book
+        <button
+          className="add-book-btn"
+          onClick={handleAddBookClick}
+          disabled={isBulkAdding || loading}
+        >
+          {isBulkAdding ? 'Processing...' : 'Add Book(s)'}
+        </button>
+        <button onClick={handleAddFolder} disabled = {isBulkAdding || loading}>
+          {isBulkAdding ? 'Importing Folder..' : 'Add Folder'}
         </button>
       </div>
 
+      {loading && <div>Loading library collection...</div>}
       {/* main body */}
       {isSearchEmpty ? (
         <div>
