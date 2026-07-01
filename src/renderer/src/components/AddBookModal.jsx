@@ -1,15 +1,14 @@
 import { useState } from 'react'
 
-const AddBookModal = ({ initialBook, onSave, onCancel }) => {
+const AddBookModal = ({ initialBook, onSave, onCancel, categories }) => {
   const [form, setForm] = useState({
     title: initialBook?.title || '',
     author: initialBook?.author || '',
-    genre: initialBook?.genre || '',
     category: initialBook?.category || '',
     readStatus: initialBook?.readStatus || 'NotRead',
     coverPageNumber: initialBook?.coverPageNumber || 1,
     filePath: initialBook?.filePath || '',
-    pageCount: initialBook?.pageCount 
+    pageCount: initialBook?.pageCount
   })
 
   const handleChange = (e) => {
@@ -39,12 +38,15 @@ const AddBookModal = ({ initialBook, onSave, onCancel }) => {
             <input type="text" value={form.author} name="author" onChange={handleChange} />
           </label>
           <label>
-            Genre:
-            <input type="text" value={form.genre} name="genre" onChange={handleChange} />
-          </label>
-          <label>
             Category:
-            <input type="text" value={form.category} name="category" onChange={handleChange} />
+            <select name='category' value={form.category} onChange={handleChange}>
+              <option value="Uncategorized">Uncategorized</option>
+              {categories.map((category) => (
+                <option value={category} key={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             Read Status

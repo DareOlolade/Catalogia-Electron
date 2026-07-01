@@ -37,7 +37,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 10px 28px;
   height: 54px;
   background-color: var(--bg-secondary);
   border-bottom: 1px solid var(--border-subtle);
@@ -159,7 +159,10 @@ body {
   overflow: visible;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.book-card:hover {
+.book-card--menu-open{
+  z-index: 10;
+}
+.book-card:hover:not(.book-card--menu-open) {
   transform: translateY(-4px);
 }
 .book-cover-container {
@@ -170,7 +173,7 @@ body {
   overflow: hidden;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   border: 1px solid var(--border-subtle);
-  background-color: var(var(--bg-secondary));
+  background-color: var(--bg-secondary);
 }
 .book-card-image {
   width: 100%;
@@ -178,36 +181,9 @@ body {
   object-fit: cover;
   display: block;
 }
-.book-card-delete-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  background-color: rgba(10, 10, 10, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  opacity: 0; /* Hidden by default */
-  transform: scale(0.9);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 5;
-}
 
-.book-card:hover .book-card-delete-btn {
-  opacity: 1;
-  transform: scale(1);
-}
 
-.book-card-delete-btn:hover {
-  background-color: var(--danger);
-  color: var(--accent);
-  border-colo: var(--danger);
-}
+
 .book-card-info {
   padding: 10px 2px 0;
 }
@@ -221,7 +197,7 @@ body {
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  --webkit-box-orient: vertical;
+  -webkit-box-orient: vertical;
 }
 
 .book-card-author {
@@ -235,7 +211,7 @@ body {
 
 .book-card-author em {
   font-style: normal;
-  color: #6b6b6b;
+  color: var(--text-tertiary);
 }
 
 .book-card-metadata {
@@ -245,6 +221,63 @@ body {
   color: var(--text-tertiary);
   margin-top: 2px;
 }
+
+.book-card-menu-wrapper{
+  position: absolute;
+  top: 93%;
+  right: 10px;
+  z-index: 5;
+}
+
+.book-card-kebab-btn{
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 5px;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+.book-card-kebab-btn:hover{
+  color: var(--danger);
+}
+
+.book-card-dropdown{
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--bg-primary);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  min-width: 100px;
+  overflow: hidden;
+  z-index: 100;
+}
+
+.dropdown-item{
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border: none;
+  padding: 10px 15px;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  width: 100%;
+  z-index: 100;
+}
+
+.dropdown-item:hover{
+  background-color: var(--border-strong);
+}
+
+.delete-btn{
+  color: #ff4d4f;
+  background: var(--bg-primary);
+}
+
 
 .status-badge {
   font-style: normal;

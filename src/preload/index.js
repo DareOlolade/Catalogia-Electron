@@ -8,6 +8,9 @@ const api = {
   deleteBook: (bookId) => ipcRenderer.invoke('catalog:delete', bookId),
   updateBook: (bookId, updatedFields) =>
     ipcRenderer.invoke('catalog:update', { bookId, updatedFields }),
+  getCategories: () => ipcRenderer.invoke("catalog:get-categories"),
+  addCategory: (category) => ipcRenderer.invoke("catalog:add-category", category),
+  deleteCategory: (category) => ipcRenderer.invoke("catalog:delete-category", category),
   pickPdf: () => ipcRenderer.invoke('dialog:pickPdf'),
   pickFolder: () => ipcRenderer.invoke('dialog:pickFolder'),
   scanPdfs: (folderPath) => ipcRenderer.invoke('folder:scan-pdfs', folderPath),
@@ -17,7 +20,7 @@ const api = {
   extractMetadata: (filePath) => ipcRenderer.invoke('pdf:extract-metadata', filePath),
   minimizeWindow: () => ipcRenderer.send('window:minimize'),
   maximizeWindow: () => ipcRenderer.send('window:maximize'),
-  closeWindow: () => ipcRenderer.send('window:close')
+  closeWindow: () => ipcRenderer.send('window:close'),
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

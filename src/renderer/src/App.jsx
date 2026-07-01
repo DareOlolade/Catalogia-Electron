@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import BookCard from './components/BookCard'
 import AddBookModal from './components/AddBookModal'
+import SideBar from './components/SideBar'
+import SettingsModal from './components/SettingsModal'
+import "./assets/sidebar.css"
 
 function App() {
   const [books, setBooks] = useState([])
@@ -9,12 +12,18 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [pendingBook, setPendingBook] = useState(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
+  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [categories, setCategories] = useState([])
+  const [currentView, setCurrentView] = useState('library')
   const loadBooks = async () => {
     try {
       setLoading(true)
       const data = await window.api.getAllBooks()
+      const dbCategories = await window.api.getCategories()
       setBooks(data)
+      setCategories(dbCategories)
     } catch (error) {
       console.error('Failed to load catalog', error)
     } finally {
@@ -28,11 +37,14 @@ function App() {
     const metadata = await window.api.extractMetadata(file.filePath)
     const { filePath, title } = file
     const { title: metadataTitle, author, pageCount, subject } = metadata
+
+    const verifiedCategory =
+      subject && typeof subject === 'string' ? subject.trim() : 'Uncategorized'
     const bookPayLoad = {
       title: metadataTitle || title,
       author: author || '',
       filePath: filePath,
-      genre: subject || '',
+      category: verifiedCategory,
       pageCount: pageCount
     }
     return bookPayLoad
@@ -87,9 +99,13 @@ function App() {
 
   const handleSaveModal = async (completedBook) => {
     try {
-      let finalBookForm = { ...completedBook }
-
-      if (finalBookForm.filePath) {
+      let finalBookForm = { ...completedBook, id: pendingBook?.id }
+      if (finalBookForm.id) {
+        const updatedBook = await window.api.updateBook(finalBookForm.id, finalBookForm)
+        setBooks((prevBooks) =>
+          prevBooks.map((book) => (book.id === updatedBook.id ? updatedBook : book))
+        )
+      } else if (finalBookForm.filePath) {
         const savedBook = await window.api.addBook(finalBookForm)
         const coverPath = await window.api.renderCover({
           filePath: savedBook.filePath,
@@ -138,17 +154,40 @@ function App() {
     }
   }
 
+  const handleEdit = (bookToEdit) => {
+    setPendingBook(bookToEdit)
+    setIsModalOpen(true)
+  }
+
   const filteredBooks = books.filter((book) => {
+    const bookMatch = selectedCategory === 'All' || book.category === selectedCategory
     const titleMatch = book.title?.toLowerCase().includes(searchQuery.toLowerCase())
     const authorMatch = book.author?.toLowerCase().includes(searchQuery.toLowerCase())
-    return titleMatch || authorMatch
+    return bookMatch && (titleMatch || authorMatch)
   })
-  const isSearchEmpty = books.length > 0 && filteredBooks.length == 0
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => !prev)
+  }
+
+  const isLibraryEmpty = books.length === 0
+  const isFilterEmpty = filteredBooks.length === 0
+  const hasActiveSearch = searchQuery.trim().length > 0
+  const hasActiveCategory = selectedCategory != 'All'
   return (
     <div className="app">
       {/* Nav-Bar */}
       <div className="app-navbar synced-titlebar">
-        <h1 className="navbar-logo">Catalogia</h1>
+        <button className="sidebar-toggle-btn" onClick={toggleSidebar} title="Toggle sidebar">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="1" y="3" width="14" height="1.5" rx="0.75" fill="currentColor" />
+            <rect x="1" y="7.25" width="14" height="1.5" rx="0.75" fill="currentColor" />
+            <rect x="1" y="11.5" width="14" height="1.5" rx="0.75" fill="currentColor" />
+          </svg>
+        </button>
+
+        <h1 className="navbar-logo" onClick={() => setCurrentView('library')}>
+          Catalogia
+        </h1>
         <div className="navbar-controls">
           <input
             type="search"
@@ -206,28 +245,65 @@ function App() {
         </div>
       </div>
 
-      {loading && <div>Loading library collection...</div>}
-      {/* main body */}
-      {isSearchEmpty ? (
-        <div>
-          <p>No books match '{searchQuery}'</p>
-        </div>
-      ) : (
-        <div className="book-grid">
-          {filteredBooks.map((book) => (
-            <BookCard key={book.id} book={book} onDelete={handleDeleteBook} />
-          ))}
-        </div>
-      )}
+      <div className="app-body">
+        {/*  SIDEBAR */}
+        {isSidebarOpen && (
+          <SideBar
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onSelectedCategory={setSelectedCategory}
+            onOpenSettingsView={() => setCurrentView('settings')}
+            onOpenLibraryView={() => setCurrentView('library')}
+          />
+        )}
 
-      {/* modal */}
-      {isModalOpen && (
-        <AddBookModal
-          initialBook={pendingBook}
-          onSave={handleSaveModal}
-          onCancel={handleCancelModal}
-        />
-      )}
+        {/* MAIN BOOK GRID */}
+        <div className="main-content-view">
+          {loading && <div>Loading library collection...</div>}
+          {/* main body */}
+          {currentView === 'library' ? (
+            isLibraryEmpty ? (
+              <div>No Books</div>
+            ) : isFilterEmpty && hasActiveSearch ? (
+              <div>
+                <p>No books match '{searchQuery}'</p>
+              </div>
+            ) : isFilterEmpty && hasActiveCategory ? (
+              <div>No book found in category</div>
+            ) : (
+              <div className="book-grid">
+                {filteredBooks.map((book) => (
+                  <BookCard
+                    key={book.id}
+                    book={book}
+                    onDelete={handleDeleteBook}
+                    onEdit={handleEdit}
+                  />
+                ))}
+              </div>
+            )
+          ) : (
+            <SettingsModal
+              onClose={() => setCurrentView('library')}
+              selectedCategory={selectedCategory}
+              onSelectedCategory={setSelectedCategory}
+              categories={categories}
+              onCategories={setCategories}
+              onRefreshCatalog={loadBooks}
+            />
+          )}
+
+          {/* modal */}
+          {isModalOpen && (
+            <AddBookModal
+              categories={categories}
+              initialBook={pendingBook}
+              onSave={handleSaveModal}
+              onCancel={handleCancelModal}
+            />
+          )}
+        </div>
+      </div>
     </div>
   )
 }
