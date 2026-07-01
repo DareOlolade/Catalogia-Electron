@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import BookCard from './components/BookCard'
 import AddBookModal from './components/AddBookModal'
 import SideBar from './components/SideBar'
-import SettingsModal from './components/SettingsModal'
-import "./assets/sidebar.css"
+import SettingsView from './components/SettingsView'
+import './assets/sidebar.css'
+import { Icons } from './assets/icons'
 
 function App() {
   const [books, setBooks] = useState([])
@@ -178,11 +179,7 @@ function App() {
       {/* Nav-Bar */}
       <div className="app-navbar synced-titlebar">
         <button className="sidebar-toggle-btn" onClick={toggleSidebar} title="Toggle sidebar">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="1" y="3" width="14" height="1.5" rx="0.75" fill="currentColor" />
-            <rect x="1" y="7.25" width="14" height="1.5" rx="0.75" fill="currentColor" />
-            <rect x="1" y="11.5" width="14" height="1.5" rx="0.75" fill="currentColor" />
-          </svg>
+          {Icons.sidebar}
         </button>
 
         <h1 className="navbar-logo" onClick={() => setCurrentView('library')}>
@@ -201,6 +198,7 @@ function App() {
             onClick={handleAddBookClick}
             disabled={isBulkAdding || loading}
           >
+            {Icons.addBook}
             {isBulkAdding ? 'Processing...' : 'Add Book(s)'}
           </button>
           <button
@@ -208,6 +206,7 @@ function App() {
             onClick={handleAddFolder}
             disabled={isBulkAdding || loading}
           >
+            {Icons.folder}
             {isBulkAdding ? 'Importing Folder..' : 'Add Folder'}
           </button>
         </div>
@@ -215,16 +214,12 @@ function App() {
         <div className="window-controls">
           {/* Minimize Button */}
           <button className="win-btn" onClick={() => window.api.minimizeWindow()} title="Minimize">
-            <svg width="10" height="1" viewBox="0 0 10 1" fill="none" xmlns="http://w3.org">
-              <rect width="10" height="1" fill="currentColor" />
-            </svg>
+            {Icons.minimize}
           </button>
 
           {/* Maximize / Restore Button */}
           <button className="win-btn" onClick={() => window.api.maximizeWindow()} title="Maximize">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://w3.org">
-              <rect x="0.5" y="0.5" width="9" height="9" stroke="currentColor" strokeWidth="1" />
-            </svg>
+            {Icons.maximize}
           </button>
 
           {/* Close Button */}
@@ -233,14 +228,7 @@ function App() {
             onClick={() => window.api.closeWindow()}
             title="Close"
           >
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://w3.org">
-              <path
-                d="M1 1L9 9M9 1L1 9"
-                stroke="currentColor"
-                strokeWidth="1"
-                strokeLinecap="round"
-              />
-            </svg>
+            {Icons.close}
           </button>
         </div>
       </div>
@@ -259,17 +247,32 @@ function App() {
 
         {/* MAIN BOOK GRID */}
         <div className="main-content-view">
-          {loading && <div>Loading library collection...</div>}
+          {loading && (
+            <div className="state-message">
+              <span className="state-spinner" />
+              <span>Loading library...</span>
+            </div>
+          )}
           {/* main body */}
           {currentView === 'library' ? (
             isLibraryEmpty ? (
-              <div>No Books</div>
+              <div className="state-message">
+                {Icons.emptyLibrary}
+                <strong>Your library is empty</strong>
+                <span>Add books or import a folder to get started</span>
+              </div>
             ) : isFilterEmpty && hasActiveSearch ? (
-              <div>
-                <p>No books match '{searchQuery}'</p>
+              <div className="state-message">
+                {Icons.noResults}
+                <strong>No results found</strong>
+                <span>Nothing matches &ldquo;{searchQuery}&rdquo;</span>
               </div>
             ) : isFilterEmpty && hasActiveCategory ? (
-              <div>No book found in category</div>
+              <div className="state-message">
+                {Icons.noResults}
+                <strong>No books in this category</strong>
+                <span>Try selecting a different category</span>
+              </div>
             ) : (
               <div className="book-grid">
                 {filteredBooks.map((book) => (
@@ -283,7 +286,7 @@ function App() {
               </div>
             )
           ) : (
-            <SettingsModal
+            <SettingsView
               onClose={() => setCurrentView('library')}
               selectedCategory={selectedCategory}
               onSelectedCategory={setSelectedCategory}

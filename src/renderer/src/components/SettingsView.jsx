@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import '../assets/SettingsModal.css'
+import '../assets/SettingsView.css'
 
-export default function SettingsModal({
+export default function SettingsView({
   onClose,
   categories = [],
   onCategories,

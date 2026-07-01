@@ -1,5 +1,5 @@
 import '../assets/sidebar.css'
-const SideBar = ({ categories, selectedCategory, onSelectedCategory, onOpenSettingsView }) => {
+const SideBar = ({ categories, selectedCategory, onSelectedCategory, onOpenSettingsView, onOpenLibraryView}) => {
   return (
     <aside className="sidebar">
       <div className="sidebar-content">
@@ -8,6 +8,7 @@ const SideBar = ({ categories, selectedCategory, onSelectedCategory, onOpenSetti
             className={`menu-item ${selectedCategory === 'All' ? 'active' : ''}`}
             onClick={() => {
               onSelectedCategory('All')
+               onOpenLibraryView()
             }}
           >
             <span className="menu-label">All Books</span>
@@ -19,6 +20,7 @@ const SideBar = ({ categories, selectedCategory, onSelectedCategory, onOpenSetti
               className={`menu-item ${selectedCategory === category ? 'active' : ''}`}
               onClick={() => {
                 onSelectedCategory(category)
+                onOpenLibraryView()
               }}
             >
               <span className="menu-label">{category}</span>
