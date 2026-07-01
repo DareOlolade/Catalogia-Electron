@@ -1,0 +1,149 @@
+.app-body{
+    display: flex;
+    height: calc(100vh - 54px);
+    margin-top: 54px;
+    overflow: hidden;
+}
+
+.sidebar{
+    width: 220px;
+    min-width: 220px;
+    height: 100%;
+    background-color: var(--bg-secondary);
+    border-right:1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 50;
+}
+
+.sidebar-content{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    padding: 12px 8px;
+}
+
+.sidebar-content nav{
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 8px 12px 4px;
+    margini-top: 8px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.menu-item:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.menu-item.active {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.menu-item.active::before {
+  content: '';
+  display: block;
+  width: 3px;
+  height: 14px;
+  background-color: var(--accent);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.menu-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+  opacity: 0.8;
+}
+
+.menu-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Category pill (optional count badge) */
+.menu-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  background-color: var(--bg-primary);
+  padding: 1px 7px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+/* Footer */
+.sidebar-footer {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 8px;
+}
+
+.sidebar-footer .menu-item {
+  color: var(--text-tertiary);
+}
+
+.sidebar-footer .menu-item:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* Main content scrollable area */
+.main-content-view {
+  flex: 1;
+  overflow-y: auto;
+  height: 100%;
+}
+
+/* ── Toggle sidebar button in navbar ── */
+.sidebar-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  -webkit-app-region: no-drag;
+}
+
+.sidebar-toggle-btn:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.sidebar-toggle-btn svg {
+  display: block;
+}

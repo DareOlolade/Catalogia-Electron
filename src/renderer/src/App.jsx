@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
 import BookCard from './components/BookCard'
 import AddBookModal from './components/AddBookModal'
+import SideBar from './components/SideBar'
+import SettingsView from './components/SettingsView'
+import './assets/sidebar.css'
+import { Icons } from './assets/icons'
 
 function App() {
   const [books, setBooks] = useState([])
@@ -9,12 +13,22 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [pendingBook, setPendingBook] = useState(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
+  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [categories, setCategories] = useState([])
+  const [currentView, setCurrentView] = useState('library')
+
+  const [settings, setSettings] = useState({grayscaleCovers: false})
   const loadBooks = async () => {
     try {
       setLoading(true)
       const data = await window.api.getAllBooks()
+      const dbCategories = await window.api.getCategories()
+      const appSettings = await window.api.getSettings()
       setBooks(data)
+      setCategories(dbCategories)
+      setSettings(appSettings)
     } catch (error) {
       console.error('Failed to load catalog', error)
     } finally {
@@ -24,15 +38,19 @@ function App() {
   useEffect(() => {
     loadBooks()
   }, [])
+
   const buildPayloadFromFile = async (file) => {
     const metadata = await window.api.extractMetadata(file.filePath)
     const { filePath, title } = file
     const { title: metadataTitle, author, pageCount, subject } = metadata
+
+    const verifiedCategory =
+      subject && typeof subject === 'string' ? subject.trim() : 'Uncategorized'
     const bookPayLoad = {
       title: metadataTitle || title,
       author: author || '',
       filePath: filePath,
-      genre: subject || '',
+      category: verifiedCategory,
       pageCount: pageCount
     }
     return bookPayLoad
@@ -87,9 +105,13 @@ function App() {
 
   const handleSaveModal = async (completedBook) => {
     try {
-      let finalBookForm = { ...completedBook }
-
-      if (finalBookForm.filePath) {
+      let finalBookForm = { ...completedBook, id: pendingBook?.id }
+      if (finalBookForm.id) {
+        const updatedBook = await window.api.updateBook(finalBookForm.id, finalBookForm)
+        setBooks((prevBooks) =>
+          prevBooks.map((book) => (book.id === updatedBook.id ? updatedBook : book))
+        )
+      } else if (finalBookForm.filePath) {
         const savedBook = await window.api.addBook(finalBookForm)
         const coverPath = await window.api.renderCover({
           filePath: savedBook.filePath,
@@ -111,7 +133,7 @@ function App() {
       setPendingBook(null)
     }
   }
-
+  
   const handleCancelModal = () => {
     setIsModalOpen(false)
     setPendingBook(null)
@@ -138,17 +160,45 @@ function App() {
     }
   }
 
+  const handleEdit = (bookToEdit) => {
+    setPendingBook(bookToEdit)
+    setIsModalOpen(true)
+  }
+  const handleUpdateSettings = async(fields) =>{
+    try {
+      
+      const updated = await window.api.updateSettings(fields)
+      setSettings(updated)
+    } catch (error) {
+      console.error("Failed to update settings", error)
+    }
+  }
+  
   const filteredBooks = books.filter((book) => {
+    const bookMatch = selectedCategory === 'All' || book.category === selectedCategory
     const titleMatch = book.title?.toLowerCase().includes(searchQuery.toLowerCase())
     const authorMatch = book.author?.toLowerCase().includes(searchQuery.toLowerCase())
-    return titleMatch || authorMatch
+    return bookMatch && (titleMatch || authorMatch)
   })
-  const isSearchEmpty = books.length > 0 && filteredBooks.length == 0
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => !prev)
+  }
+  
+  const isLibraryEmpty = books.length === 0
+  const isFilterEmpty = filteredBooks.length === 0
+  const hasActiveSearch = searchQuery.trim().length > 0
+  const hasActiveCategory = selectedCategory != 'All'
   return (
     <div className="app">
       {/* Nav-Bar */}
       <div className="app-navbar synced-titlebar">
-        <h1 className="navbar-logo">Catalogia</h1>
+        <button className="sidebar-toggle-btn" onClick={toggleSidebar} title="Toggle sidebar">
+          {Icons.sidebar}
+        </button>
+
+        <h1 className="navbar-logo" onClick={() => setCurrentView('library')}>
+          Catalogia
+        </h1>
         <div className="navbar-controls">
           <input
             type="search"
@@ -162,6 +212,7 @@ function App() {
             onClick={handleAddBookClick}
             disabled={isBulkAdding || loading}
           >
+            {Icons.addBook}
             {isBulkAdding ? 'Processing...' : 'Add Book(s)'}
           </button>
           <button
@@ -169,6 +220,7 @@ function App() {
             onClick={handleAddFolder}
             disabled={isBulkAdding || loading}
           >
+            {Icons.folder}
             {isBulkAdding ? 'Importing Folder..' : 'Add Folder'}
           </button>
         </div>
@@ -176,16 +228,12 @@ function App() {
         <div className="window-controls">
           {/* Minimize Button */}
           <button className="win-btn" onClick={() => window.api.minimizeWindow()} title="Minimize">
-            <svg width="10" height="1" viewBox="0 0 10 1" fill="none" xmlns="http://w3.org">
-              <rect width="10" height="1" fill="currentColor" />
-            </svg>
+            {Icons.minimize}
           </button>
 
           {/* Maximize / Restore Button */}
           <button className="win-btn" onClick={() => window.api.maximizeWindow()} title="Maximize">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://w3.org">
-              <rect x="0.5" y="0.5" width="9" height="9" stroke="currentColor" strokeWidth="1" />
-            </svg>
+            {Icons.maximize}
           </button>
 
           {/* Close Button */}
@@ -194,40 +242,88 @@ function App() {
             onClick={() => window.api.closeWindow()}
             title="Close"
           >
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://w3.org">
-              <path
-                d="M1 1L9 9M9 1L1 9"
-                stroke="currentColor"
-                strokeWidth="1"
-                strokeLinecap="round"
-              />
-            </svg>
+            {Icons.close}
           </button>
         </div>
       </div>
 
-      {loading && <div>Loading library collection...</div>}
-      {/* main body */}
-      {isSearchEmpty ? (
-        <div>
-          <p>No books match '{searchQuery}'</p>
-        </div>
-      ) : (
-        <div className="book-grid">
-          {filteredBooks.map((book) => (
-            <BookCard key={book.id} book={book} onDelete={handleDeleteBook} />
-          ))}
-        </div>
-      )}
+      <div className="app-body">
+        {/*  SIDEBAR */}
+        {isSidebarOpen && (
+          <SideBar
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onSelectedCategory={setSelectedCategory}
+            onOpenSettingsView={() => setCurrentView('settings')}
+            onOpenLibraryView={() => setCurrentView('library')}
+          />
+        )}
 
-      {/* modal */}
-      {isModalOpen && (
-        <AddBookModal
-          initialBook={pendingBook}
-          onSave={handleSaveModal}
-          onCancel={handleCancelModal}
-        />
-      )}
+        {/* MAIN BOOK GRID */}
+        <div className="main-content-view">
+          {loading && (
+            <div className="state-message">
+              <span className="state-spinner" />
+              <span>Loading library...</span>
+            </div>
+          )}
+          {/* main body */}
+          {currentView === 'library' ? (
+            isLibraryEmpty ? (
+              <div className="state-message">
+                {Icons.emptyLibrary}
+                <strong>Your library is empty</strong>
+                <span>Add books or import a folder to get started</span>
+              </div>
+            ) : isFilterEmpty && hasActiveSearch ? (
+              <div className="state-message">
+                {Icons.noResults}
+                <strong>No results found</strong>
+                <span>Nothing matches &ldquo;{searchQuery}&rdquo;</span>
+              </div>
+            ) : isFilterEmpty && hasActiveCategory ? (
+              <div className="state-message">
+                {Icons.noResults}
+                <strong>No books in this category</strong>
+                <span>Try selecting a different category</span>
+              </div>
+            ) : (
+              <div className="book-grid">
+                {filteredBooks.map((book) => (
+                  <BookCard
+                    key={book.id}
+                    book={book}
+                    onDelete={handleDeleteBook}
+                    onEdit={handleEdit}
+                    grayscale={settings.grayscaleCovers}
+                  />
+                ))}
+              </div>
+            )
+          ) : (
+            <SettingsView
+              onClose={() => setCurrentView('library')}
+              selectedCategory={selectedCategory}
+              onSelectedCategory={setSelectedCategory}
+              categories={categories}
+              onCategories={setCategories}
+              onRefreshCatalog={loadBooks}
+              settings = {settings}
+              onUpdateSettings={handleUpdateSettings}
+            />
+          )}
+
+          {/* modal */}
+          {isModalOpen && (
+            <AddBookModal
+              categories={categories}
+              initialBook={pendingBook}
+              onSave={handleSaveModal}
+              onCancel={handleCancelModal}
+            />
+          )}
+        </div>
+      </div>
     </div>
   )
 }

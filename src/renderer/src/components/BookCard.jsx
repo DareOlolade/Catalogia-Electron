@@ -1,7 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
-const BookCard = ({ book, onDelete }) => {
+const BookCard = ({ book, onDelete, onEdit, grayscale }) => {
   const [coverSrc, setCoverSrc] = useState(null)
+  const [showMenu, setShowMenu] = useState(false)
+  const menuRef = useRef()
+
+  useEffect(() => {
+    if (!showMenu) return
+
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showMenu])
 
   useEffect(() => {
     let cancelled = false
@@ -22,22 +36,49 @@ const BookCard = ({ book, onDelete }) => {
     await window.api.openBook(book.filePath)
   }
 
+  const toggleMenu = (e) => {
+    e.stopPropagation()
+    setShowMenu((prev) => !prev)
+  }
+
   const handleDeleteClick = async (e) => {
     e.stopPropagation()
+    setShowMenu(false)
     const confirmed = window.confirm(`Are you sure you want to delete ${book.title}`)
     if (confirmed) {
       onDelete(book.id)
     }
   }
+  const handleEditClick = (e) => {
+    e.stopPropagation()
+    onEdit(book)
+  }
   return (
-    <div className="book-card" onClick={handleCardClick}>
-      <div className="book-card-container">
+    <div className={`book-card ${showMenu ? 'book-card--menu-open' : ''}`} onClick={handleCardClick}>
+      <div className="book-cover-container">
         {coverSrc ? (
-          <img className="book-card-image" src={coverSrc} alt={book.title} />
+          <img className={`book-card-image ${grayscale ? "grayscale" : ""}`} src={coverSrc} alt={book.title} />
         ) : (
           <div className="no-cover-fallback">No cover Available</div>
         )}
       </div>
+
+      <div className="book-card-menu-wrapper" ref={menuRef}>
+        <button onClick={toggleMenu} className="book-card-kebab-btn">
+          &#8942;
+        </button>
+        {showMenu && (
+          <div className="book-card-dropdown">
+            <button onClick={handleEditClick} className="dropdown-item edit-btn">
+              Edit
+            </button>
+            <button onClick={handleDeleteClick} className="dropdown-item delete-btn">
+              Delete
+            </button>
+          </div>
+        )}
+      </div>
+
       <div className="book-card-info">
         <h1 className="book-card-title">{book.title}</h1>
         <p className="book-card-author">{book.author || 'Unknown Author'}</p>
@@ -51,22 +92,6 @@ const BookCard = ({ book, onDelete }) => {
           )}
         </div>
       </div>
-
-      <button onClick={handleDeleteClick} className="book-card-delete-btn">
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <polyline points="3 6 5 6 21 6"></polyline>
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-        </svg>
-      </button>
     </div>
   )
 }

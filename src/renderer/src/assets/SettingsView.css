@@ -1,0 +1,232 @@
+/* SettingsModal.css */
+
+.settings-view {
+  padding: 40px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.settings-header {
+  margin-bottom: 32px;
+}
+
+.settings-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+.settings-header p {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+/* ── Section card ── */
+.settings-section {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.settings-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  padding: 14px 20px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* ── Add category form ── */
+.add-category-form {
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.add-category-form input {
+  flex: 1;
+  padding: 8px 12px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.add-category-form input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.add-category-form input:focus {
+  border-color: var(--border-strong);
+}
+
+.add-category-form input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.add-category-form button[type='submit'] {
+  padding: 8px 18px;
+  background-color: var(--accent);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.add-category-form button[type='submit']:hover {
+  background-color: #d4d4d4;
+}
+
+.add-category-form button[type='submit']:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ── Categories list ── */
+.categories-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background-color 0.12s ease;
+}
+
+.category-item:last-child {
+  border-bottom: none;
+}
+
+.category-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.category-item span {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 400;
+}
+
+/* ── Delete button ── */
+.category-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.category-delete-btn:hover {
+  background-color: rgba(220, 53, 69, 0.12);
+  border-color: rgba(220, 53, 69, 0.3);
+  color: #ff4d4f;
+}
+
+.category-delete-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.category-delete-btn svg {
+  display: block;
+}
+
+/* ── Empty state ── */
+.empty-message {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  padding: 20px;
+  text-align: center;
+}
+
+/* ── Settings Row ── */
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.settings-row:last-child {
+  border-bottom: none;
+}
+
+.settings-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-row-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.settings-row-description {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+/* ── Toggle Switch ── */
+.toggle-switch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-mid);
+  border-radius: 11px;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.toggle-switch.active {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+.toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background-color: var(--text-tertiary);
+  border-radius: 50%;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.toggle-switch.active .toggle-knob {
+  transform: translateX(18px);
+  background-color: var(--bg-primary);
+}
