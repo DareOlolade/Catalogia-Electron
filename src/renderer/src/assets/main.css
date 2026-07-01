@@ -547,6 +547,18 @@ add-book-btn.secondary {
   }
 }
 
+
+/* ── Book Cover Grayscale ── */
+.book-card-image.grayscale {
+  filter: grayscale(100%);
+  transition: filter 0.3s ease;
+}
+
+.book-card:hover .book-card-image.grayscale {
+  filter: grayscale(40%);
+}
+
+
 /* ── Scrollbar ── */
 ::-webkit-scrollbar {
   width: 8px;

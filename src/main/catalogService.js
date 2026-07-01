@@ -6,15 +6,40 @@ import crypto from 'crypto'
 export default class CatalogService {
   constructor() {
     this._baseFolder = app.getPath('userData')
+
     this._catalogFilePath = path.join(this._baseFolder, 'catalogia.json')
+    this._settingsFilePath = path.join(this._baseFolder, 'settings.json')
     this._categoriesFilePath = path.join(this._baseFolder, 'categories.json')
+
     if (!fs.existsSync(this._baseFolder)) {
       fs.mkdirSync(this._baseFolder, { recursive: true })
     }
+
     this._books = this.loadCatalog()
     this._categories = this.loadCategories()
+    this._settings = this.loadSettings()
   }
 
+  loadSettings() {
+    const defaults = { grayscaleCovers: false }
+    if (!fs.existsSync(this._settingsFilePath)) {
+      this.saveSettings(defaults)
+      return defaults
+    }
+    try {
+      const jsonText = fs.readFileSync(this._settingsFilePath, 'utf-8')
+      const settings = JSON.parse(jsonText)
+      return { ...defaults, ...settings }
+    } catch (error) {
+      console.error('Error loading file', error)
+      return defaults
+    }
+  }
+
+  saveSettings(settings) {
+    const json = JSON.stringify(settings, null, 4)
+    fs.writeFileSync(this._settingsFilePath, json, 'utf-8')
+  }
   loadCategories() {
     const defaultCategories = ['Fiction', 'Technical', 'Educational']
     if (!fs.existsSync(this._categoriesFilePath)) {
@@ -31,6 +56,16 @@ export default class CatalogService {
     }
   }
 
+  getSettings() {
+    return { ...this._settings }
+  }
+
+  updateSettings(newFields) {
+    this._settings = { ...this._settings, ...newFields }
+    this.saveSettings(this._settings)
+    return this.getSettings()
+  }
+
   saveCategories(categories) {
     const json = JSON.stringify(categories, null, 4)
     fs.writeFileSync(this._categoriesFilePath, json, 'utf-8')
@@ -43,7 +78,7 @@ export default class CatalogService {
     const alreadyExists = this._categories.some(
       (cat) => cat.toLowerCase() === trimmedCategory.toLowerCase()
     )
-    if(!alreadyExists){
+    if (!alreadyExists) {
       this._categories = [...this._categories, trimmedCategory]
       this.saveCategories(this._categories)
     }
@@ -51,7 +86,7 @@ export default class CatalogService {
   }
 
   deleteCategory(category) {
-    if (category === 'uncategorized') return
+    if (category === 'uncategorized') return this.getCategories()
     if (category && this._categories.includes(category)) {
       this._categories = this._categories.filter((cat) => cat !== category)
       this.saveCategories(this._categories)
@@ -119,7 +154,7 @@ export default class CatalogService {
             console.log(`Succesfully deleted book from ${deletedBook.coverImagePath}`)
           }
         } catch (fileError) {
-          console.error(`Failed to delete physical file at: ${deletedBook.coverImagePath}`)
+          console.error(`Failed to delete physical file at: ${deletedBook.coverImagePath}`, fileError)
         }
       }
       this._books = this._books.filter((book) => book.id !== bookId)

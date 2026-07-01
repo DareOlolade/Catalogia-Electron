@@ -223,6 +223,12 @@ function registerCatalogIpcHandlers() {
   ipcMain.handle('catalog:delete-category', (event, category) => {
     return catalogService.deleteCategory(category)
   })
+  ipcMain.handle('settings:get', () => {
+    return catalogService.getSettings()
+  })
+  ipcMain.handle('settings:update', (event, newFields) => {
+    return catalogService.updateSettings(newFields)
+  })
 }
 
 // This method will be called when Electron has finished

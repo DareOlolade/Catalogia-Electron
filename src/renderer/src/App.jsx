@@ -18,13 +18,17 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [categories, setCategories] = useState([])
   const [currentView, setCurrentView] = useState('library')
+
+  const [settings, setSettings] = useState({grayscaleCovers: false})
   const loadBooks = async () => {
     try {
       setLoading(true)
       const data = await window.api.getAllBooks()
       const dbCategories = await window.api.getCategories()
+      const appSettings = await window.api.getSettings()
       setBooks(data)
       setCategories(dbCategories)
+      setSettings(appSettings)
     } catch (error) {
       console.error('Failed to load catalog', error)
     } finally {
@@ -34,6 +38,7 @@ function App() {
   useEffect(() => {
     loadBooks()
   }, [])
+
   const buildPayloadFromFile = async (file) => {
     const metadata = await window.api.extractMetadata(file.filePath)
     const { filePath, title } = file
@@ -128,7 +133,7 @@ function App() {
       setPendingBook(null)
     }
   }
-
+  
   const handleCancelModal = () => {
     setIsModalOpen(false)
     setPendingBook(null)
@@ -159,7 +164,16 @@ function App() {
     setPendingBook(bookToEdit)
     setIsModalOpen(true)
   }
-
+  const handleUpdateSettings = async(fields) =>{
+    try {
+      
+      const updated = await window.api.updateSettings(fields)
+      setSettings(updated)
+    } catch (error) {
+      console.error("Failed to update settings", error)
+    }
+  }
+  
   const filteredBooks = books.filter((book) => {
     const bookMatch = selectedCategory === 'All' || book.category === selectedCategory
     const titleMatch = book.title?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -169,7 +183,7 @@ function App() {
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev)
   }
-
+  
   const isLibraryEmpty = books.length === 0
   const isFilterEmpty = filteredBooks.length === 0
   const hasActiveSearch = searchQuery.trim().length > 0
@@ -281,6 +295,7 @@ function App() {
                     book={book}
                     onDelete={handleDeleteBook}
                     onEdit={handleEdit}
+                    grayscale={settings.grayscaleCovers}
                   />
                 ))}
               </div>
@@ -293,6 +308,8 @@ function App() {
               categories={categories}
               onCategories={setCategories}
               onRefreshCatalog={loadBooks}
+              settings = {settings}
+              onUpdateSettings={handleUpdateSettings}
             />
           )}
 

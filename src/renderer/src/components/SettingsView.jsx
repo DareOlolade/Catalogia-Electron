@@ -7,7 +7,9 @@ export default function SettingsView({
   onCategories,
   onRefreshCatalog,
   selectedCategory,
-  onSelectedCategory
+  onSelectedCategory = () =>{}, 
+  settings,
+  onUpdateSettings
 }) {
   const [newCategory, setNewCategory] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -63,6 +65,10 @@ export default function SettingsView({
     </svg>
   )
 
+  const handleGrayScaleToggle = () => {
+    onUpdateSettings({ grayscaleCovers: !settings.grayscaleCovers })
+  }
+
   return (
     <div className="settings-view" onClick={(e) => e.stopPropagation()}>
       <div className="settings-header">
@@ -71,6 +77,22 @@ export default function SettingsView({
       </div>
 
       <div className="settings-section">
+        <p className="settings-section-title">Apperance</p>
+        <div className="settings-row">
+          <div className="settings-row-info">
+            <span className="settings-row-label">Grayscale cover</span>
+            <span className="settings-row-description">Display book covers in black and white</span>
+          </div>
+
+          <button
+            className={`toggle-switch ${settings.grayscaleCovers ? 'active' : ''}`}
+            onClick={handleGrayScaleToggle}
+            role="switch"
+            aria-checked={settings.grayscaleCovers}
+          >
+            <span className="toggle-knob" />
+          </button>
+        </div>
         <p className="settings-section-title">Categories</p>
         {/* Add Category Form */}
         <form onSubmit={handleAdd} className="add-category-form">

@@ -8,6 +8,8 @@ const api = {
   deleteBook: (bookId) => ipcRenderer.invoke('catalog:delete', bookId),
   updateBook: (bookId, updatedFields) =>
     ipcRenderer.invoke('catalog:update', { bookId, updatedFields }),
+  getSettings: () => ipcRenderer.invoke("settings:get"),
+  updateSettings: (fields) => ipcRenderer.invoke("settings:update", fields),
   getCategories: () => ipcRenderer.invoke("catalog:get-categories"),
   addCategory: (category) => ipcRenderer.invoke("catalog:add-category", category),
   deleteCategory: (category) => ipcRenderer.invoke("catalog:delete-category", category),

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-const BookCard = ({ book, onDelete, onEdit }) => {
+const BookCard = ({ book, onDelete, onEdit, grayscale }) => {
   const [coverSrc, setCoverSrc] = useState(null)
   const [showMenu, setShowMenu] = useState(false)
   const menuRef = useRef()
@@ -57,7 +57,7 @@ const BookCard = ({ book, onDelete, onEdit }) => {
     <div className={`book-card ${showMenu ? 'book-card--menu-open' : ''}`} onClick={handleCardClick}>
       <div className="book-cover-container">
         {coverSrc ? (
-          <img className="book-card-image" src={coverSrc} alt={book.title} />
+          <img className={`book-card-image ${grayscale ? "grayscale" : ""}`} src={coverSrc} alt={book.title} />
         ) : (
           <div className="no-cover-fallback">No cover Available</div>
         )}
