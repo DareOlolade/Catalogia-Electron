@@ -3,6 +3,7 @@ import { app } from 'electron'
 import path from 'path'
 import crypto from 'crypto'
 
+
 export default class CatalogService {
   constructor() {
     this._baseFolder = app.getPath('userData')
