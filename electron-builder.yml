@@ -1,5 +1,5 @@
 appId: com.electron.app
-productName: catalogia-electron
+productName: catalogia
 directories:
   buildResources: build
 files:
@@ -11,7 +11,8 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: catalogia-electron
+  executableName: catalogia
+  icon: src/resources/icon-light.ico
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

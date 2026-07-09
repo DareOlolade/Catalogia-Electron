@@ -1,21 +1,26 @@
-import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog, nativeTheme } from 'electron'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
 import CatalogService from './catalogService.js'
 import path from 'path'
 import fs from 'fs'
 import { pdf } from 'pdf-to-img'
 import { PDFDocument } from 'pdf-lib'
+import { loadWindowState, saveWindowState } from './windowStateManager.js'
 
 function createWindow() {
+  const iconName = nativeTheme.shouldUseDarkColors ? 'catalogia-dark.ico' : 'catalogia-light.ico'
+  const iconPath = path.join(__dirname, '../../resources', iconName)
+  const windowState = loadWindowState()
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: windowState.width,
+    height: windowState.height,
+    x: windowState.x,
+    y: windowState.y,
     show: false,
     frame: false,
+    icon: iconPath,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -23,7 +28,14 @@ function createWindow() {
   })
 
   mainWindow.on('ready-to-show', () => {
+    if (windowState.isMaximized) {
+      mainWindow.maximize()
+    }
     mainWindow.show()
+  })
+
+  mainWindow.on('close', () => {
+    saveWindowState(mainWindow)
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {

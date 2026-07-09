@@ -20,6 +20,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
+    "better-sqlite3": "^12.11.1",
     "pdf-lib": "^1.17.1",
     "pdf-to-img": "^6.2.0"
   },
